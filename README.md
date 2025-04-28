@@ -63,8 +63,23 @@ Run with (see table at beginning on this readme)
 ./mocap-router --help
 ```
 
-How to write your own agent?
-==============================
+## Agent-specific Notes
+
+### MAVLINK
+
+`Unified Mocap Router` emits mavlink over UDP transport.
+You can use https://github.com/mavlink-router/mavlink-router to forward these messages to an autopilot endpoint over e.g. serial.
+
+When using `Unified Mocap Router` with PX4 via MAVLINK, the PX4-parameter
+[EKF2_EV_NOISE_MD](https://docs.px4.io/main/en/advanced_config/parameter_reference.html#EKF2_EV_NOISE_MD)
+must be set to `1`.
+This will ensure that the static noise parameters (
+[EKF2_EVA_NOISE](https://docs.px4.io/main/en/advanced_config/parameter_reference.html#EKF2_EVA_NOISE)
+[EKF2_EVP_NOISE](https://docs.px4.io/main/en/advanced_config/parameter_reference.html#EKF2_EVP_NOISE)
+) are used, as `Unified Mocap Router` does not compute a measurement noise covariance estimation.
+
+
+## How to write your own agent?
 
 To add support for your own agent it has to inheret from the base class `Agent` defined in `agent.hpp` and needs to implement the 
 
