@@ -158,6 +158,8 @@ public:
             // return -3;
         }
 
+        // we need to wait for autopilot to be online before sending, otherwise
+        // there are errors (at least with mavlink-routerd)
         std::cout << "Waiting for heartbeat..." << std::endl;
 
         while (!this->_heartbeat_received) {
@@ -166,6 +168,8 @@ public:
 
         // print sender's address
         // printSocketAddress(&src_addr);
+
+        this->initialized = true;
     }
 
     bool publish_data(int idx, pose_t& pose, twist_t& twist) override
@@ -391,7 +395,7 @@ public:
                 printf("PX4");
                 break;
             default:
-                printf("other");
+                printf("other (MAV_AUTOPILOT=%d)", heartbeat.autopilot);
                 break;
         }
         printf(" autopilot\n");
