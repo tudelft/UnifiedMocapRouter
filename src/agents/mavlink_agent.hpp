@@ -70,7 +70,7 @@ public:
         desc.add_options()
             ("client_ip,i", boost::program_options::value<std::string>(), "IP to stream the MAVLink UDP data to. Default 127.0.0.1")
             ("port,p", boost::program_options::value<unsigned short int>(), "UDP Port. Default 14551.")
-            //("system_id,sid", boost::program_options::value<std::vector<unsigned int>>()->multitoken(), "MAVLink destination system id.")
+            ("system_id", boost::program_options::value<unsigned short int>(), "MAVLink destination system id. Default 42.")
             ("autopilot,a", boost::program_options::value<std::string>(), "One of [arducopter, arduplane, px4]")
         ;
     }
@@ -93,6 +93,15 @@ public:
         } else {
             std::cout << "No MAVLink UDP port given. Assume 14551" << std::endl;
             this->_port = 14551;
+        }
+
+        if (vm.count("system_id")) {
+            unsigned short int val = vm["system_id"].as<unsigned short int>();
+            std::cout << "Streaming to MAVLINK system ID " << val << std::endl;
+            this->_mav_system_id = val;
+        } else {
+            std::cout << "No MAVLink System ID given. Assume 42" << std::endl;
+            this->_mav_system_id = 42;
         }
 
         if (this->streaming_ids.size() > 1) {
@@ -222,7 +231,6 @@ public:
 
         mavlink_message_t message;
 
-        uint8_t system_id = 42;
         struct timeval tv;
         uint64_t timestamp_us;
         gettimeofday(&tv, NULL);
@@ -237,7 +245,7 @@ public:
         //printf("%ld,%f,%f,%f\n", timestamp_us, pose.x, pose.y, pose.z);
 
         mavlink_msg_vision_position_estimate_pack(
-                system_id,
+                _mav_system_id,
                 MAV_COMP_ID_PERIPHERAL,
                 &message,
                 timestamp_us,
@@ -267,7 +275,6 @@ public:
 
         mavlink_message_t message;
 
-        uint8_t system_id = 42;
         struct timeval tv;
         uint64_t timestamp_us;
         gettimeofday(&tv, NULL);
@@ -281,7 +288,7 @@ public:
         //printf("%ld,%f,%f,%f\n", timestamp_us, pose.x, pose.y, pose.z);
 
         mavlink_msg_att_pos_mocap_pack(
-                system_id,
+                _mav_system_id,
                 MAV_COMP_ID_PERIPHERAL,
                 &message,
                 timestamp_us,
@@ -308,14 +315,13 @@ public:
 
         mavlink_message_t message;
 
-        uint8_t system_id = 42;
         struct timeval tv;
         uint64_t timestamp_us;
         gettimeofday(&tv, NULL);
         timestamp_us = (long long)tv.tv_sec * 1000000LL + (long long)tv.tv_usec;
 
         mavlink_msg_gps_input_pack(
-            system_id,
+            _mav_system_id,
             MAV_COMP_ID_PERIPHERAL,
             &message,
             timestamp_us,
@@ -405,6 +411,7 @@ public:
 private:
     unsigned short int _port;
     std::string _client_ip;
+    unsigned short int _mav_system_id;
 
     int socket_fd;
     struct sockaddr_in src_addr = {};
