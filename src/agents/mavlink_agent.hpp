@@ -70,7 +70,7 @@ public:
         desc.add_options()
             ("client_ip,i", boost::program_options::value<std::string>(), "IP to stream the MAVLink UDP data to. Default 127.0.0.1")
             ("port,p", boost::program_options::value<unsigned short int>(), "UDP Port. Default 14551.")
-            ("system_id", boost::program_options::value<unsigned short int>(), "MAVLink destination system id. Default 42.")
+            ("system_ids", boost::program_options::value<std::vector<uint8_t>>()->multitoken(), "MAVLink destination system id(s) - should be in the same order as the streaming IDs. Default 42.")
             ("autopilot,a", boost::program_options::value<std::string>(), "One of [arducopter, arduplane, px4]")
         ;
     }
@@ -94,20 +94,25 @@ public:
             std::cout << "No MAVLink UDP port given. Assume 14551" << std::endl;
             this->_port = 14551;
         }
-
-        if (vm.count("system_id")) {
-            unsigned short int val = vm["system_id"].as<unsigned short int>();
-            std::cout << "Streaming to MAVLINK system ID " << val << std::endl;
-            this->_mav_system_id = val;
+        
+        // System IDs, should match the number of streaming IDs
+        if (vm.count("system_ids")) {
+            this->_mav_system_ids = vm["system_ids"].as<std::vector<uint8_t>>();
         } else {
-            std::cout << "No MAVLink System ID given. Assume 42" << std::endl;
-            this->_mav_system_id = 42;
+            std::cout << "No MAVLink system ids given, using default of 42" << std::endl;
+            this->_mav_system_ids = {42};
         }
-
-        if (this->streaming_ids.size() > 1) {
-            std::cout << "Number of streaming_ids must be equal to 1 for the MAVLink client. Multiple not (yet) supported"
-                << std::endl;
+        
+        if (this->_mav_system_ids.size() != this->streaming_ids.size()) {
+            std::cout << "Number of MAVLink system IDs must match the number of streaming IDs. Exiting" << std::endl;
             std::raise(SIGINT);
+        }
+        else {
+            // Log the streaming IDs and their corresponding MAVLink system IDs
+            std::cout << "MAVLink system IDs mappings: " << std::endl;
+            for (size_t i = 0; i < this->streaming_ids.size(); ++i) {
+                std::cout << " - Streaming ID " << this->streaming_ids[i] << " -> MAVLink System ID " << static_cast<int>(this->_mav_system_ids[i]) << std::endl;
+            }
         }
 
         if (vm.count("autopilot")) {
@@ -183,20 +188,20 @@ public:
 
     bool publish_data(int idx, pose_t& pose, twist_t& twist) override
     {
-        if (idx != 0) {
-            // options handling only allows 1 body (idx 0), but lets make sure
+        if (idx >= this->streaming_ids.size()) {
+            // We have no mapping to streaming ID (or MAVLINK system ID for that matter) - ignore
             return false;
         }
 
         switch (this->ap) {
             case MAVLinkAp::PX4:
-                send_vision_position_estimate(pose);
+                send_vision_position_estimate(pose, this->_mav_system_ids[idx]);
                 break;
             case MAVLinkAp::ARDUCOPTER:
-                send_att_pos_mocap(pose);
+                send_att_pos_mocap(pose, this->_mav_system_ids[idx]);
                 break;
             case MAVLinkAp::ARDUPLANE:
-                send_gps_input(pose);
+                send_gps_input(pose, this->_mav_system_ids[idx]);
                 break;
         }
 
@@ -223,7 +228,7 @@ public:
         euler[2] = std::atan2(siny_cosp, cosy_cosp); // yaw
     }
 
-    void send_vision_position_estimate(pose_t& pose)
+    void send_vision_position_estimate(pose_t& pose, uint8_t mav_system_id)
     {
         if (!src_addr_set) {
             return;
@@ -245,7 +250,7 @@ public:
         //printf("%ld,%f,%f,%f\n", timestamp_us, pose.x, pose.y, pose.z);
 
         mavlink_msg_vision_position_estimate_pack(
-                _mav_system_id,
+                mav_system_id,
                 MAV_COMP_ID_PERIPHERAL,
                 &message,
                 timestamp_us,
@@ -267,7 +272,7 @@ public:
         }
     }
 
-    void send_att_pos_mocap(pose_t& pose)
+    void send_att_pos_mocap(pose_t& pose, uint8_t mav_system_id)
     {
         if (!src_addr_set) {
             return;
@@ -288,7 +293,7 @@ public:
         //printf("%ld,%f,%f,%f\n", timestamp_us, pose.x, pose.y, pose.z);
 
         mavlink_msg_att_pos_mocap_pack(
-                _mav_system_id,
+                mav_system_id,
                 MAV_COMP_ID_PERIPHERAL,
                 &message,
                 timestamp_us,
@@ -307,7 +312,7 @@ public:
         }
     }
 
-    void send_gps_input(pose_t& pose)
+    void send_gps_input(pose_t& pose, uint8_t mav_system_id)
     {
         if (!src_addr_set) {
             return;
@@ -321,7 +326,7 @@ public:
         timestamp_us = (long long)tv.tv_sec * 1000000LL + (long long)tv.tv_usec;
 
         mavlink_msg_gps_input_pack(
-            _mav_system_id,
+            mav_system_id,
             MAV_COMP_ID_PERIPHERAL,
             &message,
             timestamp_us,
@@ -405,13 +410,14 @@ public:
                 break;
         }
         printf(" autopilot\n");
+        // TODO: Parse out system IDs and ensure all system IDs have received a heartbeat before clearing this wait?
         this->_heartbeat_received = true;
     }
 
 private:
     unsigned short int _port;
     std::string _client_ip;
-    unsigned short int _mav_system_id;
+    std::vector<uint8_t> _mav_system_ids;
 
     int socket_fd;
     struct sockaddr_in src_addr = {};
