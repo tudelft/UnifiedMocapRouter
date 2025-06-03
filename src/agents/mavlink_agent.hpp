@@ -70,7 +70,8 @@ public:
         desc.add_options()
             ("client_ip,i", boost::program_options::value<std::string>(), "IP to stream the MAVLink UDP data to. Default 127.0.0.1")
             ("port,p", boost::program_options::value<unsigned short int>(), "UDP Port. Default 14551.")
-            ("system_ids", boost::program_options::value<std::vector<uint8_t>>()->multitoken(), "MAVLink destination system id(s) - should be in the same order as the streaming IDs. Default 42.")
+            // TODO: This is actually a uint8_t, but that seems to be interpreted as an ASCII character -> gives the wrong number (even unsigned char?)
+            ("system_ids", boost::program_options::value<std::vector<unsigned short int>>()->multitoken(), "MAVLink destination system id(s) - should be in the same order as the streaming IDs. Default 42.")
             ("autopilot,a", boost::program_options::value<std::string>(), "One of [arducopter, arduplane, px4]")
         ;
     }
@@ -97,7 +98,7 @@ public:
         
         // System IDs, should match the number of streaming IDs
         if (vm.count("system_ids")) {
-            this->_mav_system_ids = vm["system_ids"].as<std::vector<uint8_t>>();
+            this->_mav_system_ids = vm["system_ids"].as<std::vector<unsigned short int>>();
         } else {
             std::cout << "No MAVLink system ids given, using default of 42" << std::endl;
             this->_mav_system_ids = {42};
@@ -111,7 +112,7 @@ public:
             // Log the streaming IDs and their corresponding MAVLink system IDs
             std::cout << "MAVLink system IDs mappings: " << std::endl;
             for (size_t i = 0; i < this->streaming_ids.size(); ++i) {
-                std::cout << " - Streaming ID " << this->streaming_ids[i] << " -> MAVLink System ID " << static_cast<int>(this->_mav_system_ids[i]) << std::endl;
+                std::cout << " - Streaming ID " << this->streaming_ids[i] << " -> MAVLink System ID " << this->_mav_system_ids[i] << std::endl;
             }
         }
 
@@ -417,7 +418,7 @@ public:
 private:
     unsigned short int _port;
     std::string _client_ip;
-    std::vector<uint8_t> _mav_system_ids;
+    std::vector<unsigned short int> _mav_system_ids;
 
     int socket_fd;
     struct sockaddr_in src_addr = {};
