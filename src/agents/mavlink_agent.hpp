@@ -69,7 +69,8 @@ public:
     {
         desc.add_options()
             ("client_ip,i", boost::program_options::value<std::string>(), "IP to stream the MAVLink UDP data to. Default 127.0.0.1")
-            ("port,p", boost::program_options::value<unsigned short int>(), "UDP Port. Default 14551.")
+            ("port,p", boost::program_options::value<unsigned short int>(), "Port. Default 14551 for UDP mode and 5760 for TCP mode (not recommended for vehicle uplink).")
+            ("tcp", boost::program_options::bool_switch()->default_value(false), "Use TCP instead of UDP. Default is disabled/UDP.")
             // TODO: This is actually a uint8_t, but that seems to be interpreted as an ASCII character -> gives the wrong number (even unsigned char?)
             ("system_ids", boost::program_options::value<std::vector<unsigned short int>>()->multitoken(), "MAVLink destination system id(s) - should be in the same order as the streaming IDs. Default 42.")
             ("autopilot,a", boost::program_options::value<std::string>(), "One of [arducopter, arduplane, px4]")
@@ -78,23 +79,31 @@ public:
 
     void parse_extra_po(const boost::program_options::variables_map &vm) override
     {
+        // Do we run on TCP or UDP?
+        // Check if we want to use TCP or UDP
+        if (vm.count("tcp") && vm["tcp"].as<bool>()) {
+            this->use_tcp = true;
+        } else {
+            this->use_tcp = false;
+        }
+
         if (vm.count("client_ip")) {
             std::string val = vm["client_ip"].as<std::string>();
-            std::cout << "MAVLink UDP client ip " << val << std::endl;
             this->_client_ip = val;
         } else {
-            std::cout << "No MAVLink UDP client ip passed, assuming 127.0.0.1" << std::endl;
             this->_client_ip = "127.0.0.1";
         }
 
         if (vm.count("port")) {
             unsigned short int val = vm["port"].as<unsigned short int>();
-            std::cout << "Streaming MAVLink UDP on port " << val << std::endl;
             this->_port = val;
         } else {
-            std::cout << "No MAVLink UDP port given. Assume 14551" << std::endl;
-            this->_port = 14551;
+            this->_port = this->use_tcp ? 5760 : 14551; // TCP/UDP defaults differ
         }
+
+        // Log a single message with the connection details
+        std::cout << "MAVLink Agent will connect to " << this->_client_ip << ":" << this->_port 
+                  << " using " << (this->use_tcp ? "TCP" : "UDP") << std::endl;
         
         // System IDs, should match the number of streaming IDs
         if (vm.count("system_ids")) {
@@ -143,48 +152,61 @@ public:
 
     void pre_start() override
     {
-        // Open UDP socket
-        socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
-
-        if (socket_fd < 0) {
-            printf("socket error: %s\n", strerror(errno));
-            // return -1;
-        }
-
-        // Bind to port
+        // Parse the desired IP address and port - same for TCP and UDP
         struct sockaddr_in addr = {};
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
         inet_pton(AF_INET, this->_client_ip.c_str(), &(addr.sin_addr));
-        addr.sin_port = htons(this->_port); // default port on the ground
+        addr.sin_port = htons(this->_port);
 
-        if (bind(socket_fd, (struct sockaddr*)(&addr), sizeof(addr)) != 0) {
-            printf("bind error: %s\n", strerror(errno));
-            // return -2;
+        // Create the TCP/UDP socket
+        socket_fd = socket(PF_INET, this->use_tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+        if (socket_fd < 0) {
+            printf("socket error: %s\n", strerror(errno));
+            std::raise(SIGINT);
         }
-
-        // We set a timeout at 100ms to prevent being stuck in recvfrom for too
-        // long and missing our chance to send some stuff.
-        struct timeval tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = 100000;
-        if (setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-            printf("setsockopt error: %s\n", strerror(errno));
-            // return -3;
+        
+        // Perform TCP connection if requested
+        // NOTE: No need to send a heartbeat for TCP & don't care about the port we use on this computer; consider initialized upon connection
+        if (this->use_tcp) {
+            int status = connect(socket_fd, (sockaddr*) &addr, sizeof(addr));
+            if(status < 0)
+            {
+                std::cout << "Error connecting to socket!" << std::endl;
+            }
+            this->initialized = true;
+            return;
         }
+        else {
+            // Local client IP -> assume we want to bind to this address
+            if (bind(socket_fd, (struct sockaddr*)(&addr), sizeof(addr)) != 0) {
+                printf("bind error: %s\n", strerror(errno));
+                // return -2;
+            }
 
-        // we need to wait for autopilot to be online before sending, otherwise
-        // there are errors (at least with mavlink-routerd)
-        std::cout << "Waiting for heartbeat..." << std::endl;
+            // We set a timeout at 100ms to prevent being stuck in recvfrom for too
+            // long and missing our chance to send some stuff.
+            struct timeval tv;
+            tv.tv_sec = 0;
+            tv.tv_usec = 100000;
+            if (setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+                printf("setsockopt error: %s\n", strerror(errno));
+                // return -3;
+            }
 
-        while (!this->_heartbeat_received) {
-            receive_some();
+            // we need to wait for autopilot to be online before sending, otherwise
+            // there are errors (at least with mavlink-routerd)
+            std::cout << "Waiting for heartbeat..." << std::endl;
+
+            while (!this->_heartbeat_received) {
+                receive_some();
+            }
+
+            // print sender's address
+            // printSocketAddress(&src_addr);
+
+            this->initialized = true;
         }
-
-        // print sender's address
-        // printSocketAddress(&src_addr);
-
-        this->initialized = true;
     }
 
     bool publish_data(int idx, pose_t& pose, twist_t& twist) override
@@ -264,11 +286,24 @@ public:
                 cov,
                 0);
 
+        send_mavlink_msg(message);
+    }
+
+    void send_mavlink_msg(mavlink_message_t &message)
+    {
         uint8_t buf[MAVLINK_MAX_PACKET_LEN];
         const int len = mavlink_msg_to_send_buffer(buf, &message);
 
-        int ret = sendto(socket_fd, buf, len, 0, (const struct sockaddr*)&src_addr, src_addr_len);
-        if (ret != len) {
+        int ret = 0;
+        if (this->use_tcp) {
+            ret = send(socket_fd, buf, len, 0);
+        }
+        else {
+            ret = sendto(socket_fd, buf, len, 0, (struct sockaddr*)(&src_addr), src_addr_len);
+        }
+
+        if (ret != len)
+        {
             printf("sendto error: %s\n", strerror(errno));
         }
     }
@@ -304,13 +339,8 @@ public:
                 pose.z,
                 cov);
 
-        uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-        const int len = mavlink_msg_to_send_buffer(buffer, &message);
-
-        int ret = sendto(socket_fd, buffer, len, 0, (const struct sockaddr*)&src_addr, src_addr_len);
-        if (ret != len) {
-            printf("sendto error: %s\n", strerror(errno));
-        }
+        
+        send_mavlink_msg(message);
     }
 
     void send_gps_input(pose_t& pose, uint8_t mav_system_id)
@@ -345,13 +375,8 @@ public:
             15,
             0); //yaw
 
-        uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-        const int len = mavlink_msg_to_send_buffer(buffer, &message);
-
-        int ret = sendto(socket_fd, buffer, len, 0, (const struct sockaddr*)&src_addr, src_addr_len);
-        if (ret != len) {
-            printf("sendto error: %s\n", strerror(errno));
-        }
+        
+        send_mavlink_msg(message);
     }
 
     void receive_some()
@@ -416,6 +441,7 @@ public:
     }
 
 private:
+    bool use_tcp;
     unsigned short int _port;
     std::string _client_ip;
     std::vector<unsigned short int> _mav_system_ids;
