@@ -70,7 +70,11 @@ namespace{
 }
 
 static void print_usage(char const *prog_name) {
-    printf("Usage: %s MOCAP AGENT [-h|--help] [options]\n\n", prog_name);
+
+    // TODO: highlight that a general --help is not avaialble,
+    //       you have to pass MOCAP and AGENT to get specific help
+    printf("\nUsage: %s MOCAP AGENT [-h|--help] [options]\n\n", prog_name);
+    printf("NOTE: A general --help is not available. Specify MOCAP and AGENT, followed by -h/--help!\n\n");
     printf("Available MOCAPs: ");
 #ifdef USE_MOCAP_TEST
     printf("test ");
@@ -105,7 +109,7 @@ static void print_usage(char const *prog_name) {
 #ifdef USE_AGENT_ROS2PX4
     printf("ros2px4 ");
 #endif
-    printf("\n");
+    printf("\n\n");
 }
 
 int main(int argc, char const *argv[])

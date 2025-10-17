@@ -175,6 +175,7 @@ public:
                 if (i >= n) { break; }
                 std::cout << availableServers[i].serverAddress << std::endl;
             }
+            std::cout << "Make sure you are connected by ethernet OR wi-fi, but not both" << std::endl;
             return ErrorCode_Network;
 
         }
