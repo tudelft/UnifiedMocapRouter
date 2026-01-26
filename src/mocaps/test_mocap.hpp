@@ -36,6 +36,7 @@ public:
     TestMocap() : Mocap{}, stopFlag{false}, freq{10.}
     {
         // setup work, but do as little as possible
+        this->name = "test";
     }
 
     ~TestMocap()

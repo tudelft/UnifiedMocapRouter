@@ -29,6 +29,8 @@ class UdpAgent : public Agent
 public:
     UdpAgent() : _socket{_io_service}
     {
+        // do as little setup here as possible. Use pre_start instead
+        this->name = "udp";
     }
 
     ~UdpAgent()

@@ -72,6 +72,7 @@ public:
     {
         // setup work, but as little as possible
         this->pClient = new NatNetClient();
+        this->name = "optitrack";
     }
 
     ~OptiTrackMocap()

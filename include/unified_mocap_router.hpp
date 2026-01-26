@@ -37,6 +37,7 @@ private:
     Mocap* mocap;
     Agent* agent;
     bool printMessages;
+    bool quiet;
     float publish_frequency;
     unsigned int publish_div;
 

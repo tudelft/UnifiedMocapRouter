@@ -18,6 +18,7 @@
 
 Agent::Agent() : printMessages{false}, publish_every{1}, csys{CoordinateSystem::NED}, publish_duration{0}
 {
+    // this->name = "agent";
 }
 
 Agent::Agent(const Agent &other)

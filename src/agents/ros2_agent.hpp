@@ -31,7 +31,9 @@ public:
                                 "--disable-rosout-logs",
                                 "--log-level", "rclcpp:=error"})),
                     _topics{"/mocap"}                 
-    {}
+    {
+        this->name = "ros2";
+    }
 
     void banner() override
     {

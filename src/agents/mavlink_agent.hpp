@@ -47,6 +47,8 @@ class MavlinkAgent : public Agent
 public:
     MavlinkAgent()
     {
+        // do as little setup here as possible. Use pre_start instead
+        this->name = "mavlink";
     }
 
     ~MavlinkAgent()

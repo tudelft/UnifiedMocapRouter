@@ -37,6 +37,8 @@ class LogAgent : public Agent
 public:
     LogAgent() : _logType{LogType::CSV}
     {
+        // do as little setup here as possible. Use pre_start instead
+        this->name = "log";
     }
 
     ~LogAgent()

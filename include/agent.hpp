@@ -56,6 +56,7 @@ public:
     void register_rigid_body(const RigidBody& RB);
 
     virtual void banner();
+    std::string name;
 
     /* Virtual Function to be implemented by base classes */
     // called just before/after start of the publishing thread

@@ -45,6 +45,8 @@ public:
         this->RBs.push_back(rb);
     }
 
+    std::string name;
+
     virtual void banner();
 
     // Extra Program Options
