@@ -11,11 +11,13 @@ different robotics systems.
 └─────────┘             └────────────────────────┘
 ```
 
+Troubleshooting: firewall! not both eth and wifi
+
 ## Support
 
 ### Currently implemented motion capture systems:
-* NaturalPoint, Inc. **"OptiTrack"** via its `NatNet SDK` (stable)
-* Qualisys, vis its `Qualisys CPP SDK` (experimental)
+* NaturalPoint, Inc. **"OptiTrack"** via its `NatNet SDK` (stable): `optitrack`
+* Qualisys, vis its `Qualisys CPP SDK` (experimental): `qualisys`
 
 ### Currently implemented agents:
 
@@ -29,9 +31,11 @@ different robotics systems.
 | `console`                 | Only to the terminal (if activated)                                                   | `./mocap-router test console --test_freq 100 -f 10 -c enu -r far -s 1 -n far`              |
 | `log`                     | Log to a file (csv only so far)                                                       | `./mocap-router test log --test_freq 100 -f 10 -c enu -r far -s 1 -n far -o ./output.csv`  |
 
+Explanation of arguments: Run `./mocap-router <your_mocap> <your_client> --help`
+
 ### Currently supported platforms:
 
-Ubuntu >= 22.04 on x86
+Ubuntu >= 20.04 on x86
 
 ## Building and Running
 
@@ -41,7 +45,7 @@ Prerequisites vary per agent. Currently, these are known:
 
 |   Agent   | Known Prerequisites                                                                      |
 |:---------:|------------------------------------------------------------------------------------------|
-| `all`     | `libboost-all-dev` installed with `apt`                                       |
+| all     | `cmake build-essential libboost-all-dev`, all installed with `apt`         |
 | `ivy`     | `ivy-c-dev` installed from `ppa:paparazzi-uav/ppa`                                       |
 | `ros2`    | `ros-$ROS_DISTRO-base`, needs to be sourced for compilation (execute `. scripts/source_ros_and_msgs.sh`)                                   |
 | `ros2px4` | As above + `px4_msgs` must be sourced to run (execute `. scripts/source_ros_and_msgs.sh`)|
@@ -62,6 +66,15 @@ Run with (see table at beginning on this readme)
 ```shell
 ./mocap-router --help
 ```
+
+## Troubleshooting / FAQ
+
+For OptiTrack mocap:
+- When running `mocap-router`, I get an error like `Discovering NatNet servers (timeout 1000ms)... Failed: more than 1 server found`
+  - Solution: Connect to the network only with one interface, e.g. not with both Ethernet and Wifi
+- It does not find any NatNet servers: `Discovering NatNet servers (timeout 1000ms)... Failed: No servers found`
+  - Solution: Check that 'interface' is NOT set to 'loopback' in Motive Streaming Pane. Checl connection and firewall of your device.
+
 
 ## Agent-specific Notes
 

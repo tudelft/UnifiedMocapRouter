@@ -15,11 +15,7 @@
 
 cmake_minimum_required(VERSION 3.14)
 
-# project and executables
-project(mocap-router LANGUAGES CXX)
-
-file(GLOB SOURCES "src/*.cpp" "src/agents/*.cpp" "src/common/*.cpp" "src/mocaps/*.cpp")
-add_executable(mocap-router ${SOURCES})
+#%% input arguments
 
 # ADD YOUR NEW AGENT TO THIS SEMICOLON-SEPARATED LIST!
 set(ALL_MOCAPS "optitrack;qualisys;test")
@@ -68,12 +64,21 @@ endforeach()
 message(STATUS "Building AGENTS: ${AGENTS}")
 
 
+#%% top level project setup
+
+project(mocap-router LANGUAGES CXX)
+
+# sources and executable
+file(GLOB SOURCES "src/*.cpp" "src/agents/*.cpp" "src/common/*.cpp" "src/mocaps/*.cpp")
+add_executable(mocap-router ${SOURCES})
+
+# includes
 include_directories(include)
 include_directories(src/agents)
 include_directories(src/mocaps)
 include_directories(scripts)
 
-# compiler
+# compiler settings
 set (CMAKE_CXX_STANDARD 14)
 if(MSVC)
   add_compile_options(/W4 /WX)
@@ -81,11 +86,18 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# find external libraries and include for all agents
+
+#%% find external libraries and include for all agents
+
+# common libraries (boost and pthread)
 find_package(Boost REQUIRED COMPONENTS program_options filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(mocap-router ${Boost_LIBRARIES})
 
+find_package(Threads REQUIRED)
+target_link_libraries(mocap-router Threads::Threads)
+
+# mocap vendor specific libraries
 if ("optitrack" IN_LIST MOCAPS)
     include(FetchContent)
     fetchcontent_declare(natnet_sdk_content
@@ -122,7 +134,7 @@ if ("qualisys" IN_LIST MOCAPS)
 
 endif()
 
-# Agent-specific stuff
+# Agent-specific libraries
 if ("ivy" IN_LIST AGENTS)
     find_library(IVY_LIB NAMES ivy)
     target_link_libraries(mocap-router ivy)
