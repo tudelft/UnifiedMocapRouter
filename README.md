@@ -11,8 +11,6 @@ different robotics systems.
 └─────────┘             └────────────────────────┘
 ```
 
-Troubleshooting: firewall! not both eth and wifi
-
 ## Support
 
 ### Currently implemented motion capture systems:
