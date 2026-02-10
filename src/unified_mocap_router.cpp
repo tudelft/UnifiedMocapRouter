@@ -125,7 +125,6 @@ void UnifiedMocapRouter::parse_base_po(int argc, char const *argv[])
 
     if (vm.count("quiet")) {
         this->quiet = true;
-        // std::cout << "### Unified Mocap Router: " << this->mocap->name << " -> " << this->agent->name << " ###" << std::endl;
         std::cout << "### Unified Mocap Router: " << this->mocap->name << " -> " << this->agent->name << " ###" << std::endl << std::endl;
     } else {
         this->banner();
