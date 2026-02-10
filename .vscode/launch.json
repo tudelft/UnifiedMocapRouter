@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
     {
-        "name": "mocap2ivy",
+        "name": "optitrack2ivy",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${workspaceFolder}/build/mocap2ivy",
-        "args": ["-s", "125", "--ac_id", "2"],
+        "program": "${workspaceFolder}/build/mocap-router",
+        "args": ["optitrack", "ivy","-c", "NED", "-r", "far", "-n", "far", "-f", "10", "-s", "125", "--ac_id", "2"],
         "stopAtEntry": false,
-        "cwd": "${fileDirname}",
+        "cwd": "${workspaceFolder}",
         "environment": [],
         "externalConsole": false,
         "MIMode": "gdb",
@@ -29,7 +29,7 @@
         ]
     },
     {
-        "name": "mocap-router ros2px4",
+        "name": "test2ros2px4",
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/mocap-router",
@@ -53,31 +53,7 @@
         ]
     },
     {
-        "name": "mocap2udp",
-        "type": "cppdbg",
-        "request": "launch",
-        "program": "${workspaceFolder}/build/mocap2udp",
-        "args": ["-s", "125", "-i", "127.0.0.1", "-p", "5005"],
-        "stopAtEntry": false,
-        "cwd": "${fileDirname}",
-        "environment": [],
-        "externalConsole": false,
-        "MIMode": "gdb",
-        "setupCommands": [
-            {
-                "description": "Enable pretty-printing for gdb",
-                "text": "-enable-pretty-printing",
-                "ignoreFailures": true
-            },
-            {
-                "description": "Set Disassembly Flavor to Intel",
-                "text": "-gdb-set disassembly-flavor intel",
-                "ignoreFailures": true
-            }
-        ]
-    },
-    {
-        "name": "new optitrack2console",
+        "name": "optitrack2console",
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/mocap-router",
@@ -101,7 +77,7 @@
         ]
     },
     {
-        "name": "new test2console",
+        "name": "qualisys2console",
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/mocap-router",
@@ -124,5 +100,29 @@
             }
         ]
     },
+    {
+        "name": "test2console",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/mocap-router",
+        "args": ["test", "console", "-d", "1", "-c", "ned", "-r", "far", "-s", "1", "-n", "far", "--test_freq", "1"],
+        "stopAtEntry": false,
+        "cwd": "${fileDirname}",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ]
+    }
 ]
 }

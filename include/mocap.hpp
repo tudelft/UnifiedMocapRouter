@@ -45,6 +45,8 @@ public:
         this->RBs.push_back(rb);
     }
 
+    std::string name; // Name of the mocap system printed in --quiet mode
+
     virtual void banner();
 
     // Extra Program Options

@@ -18,6 +18,7 @@
 
 Mocap::Mocap()
 {
+    // this->name = "mocap";
 }
 
 Mocap::Mocap(const Mocap &other)

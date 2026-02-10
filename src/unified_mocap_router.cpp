@@ -39,7 +39,7 @@ UnifiedMocapRouter::UnifiedMocapRouter(const UnifiedMocapRouter &other)
 }
 
 UnifiedMocapRouter::UnifiedMocapRouter(Mocap* mocap, Agent* agent) :
-    printMessages{false}, desc{"Allowed options"}, vm{}, publish_div{0}, publish_frequency{0.f}
+    printMessages{false}, quiet{false}, desc{"Allowed options"}, vm{}, publish_div{0}, publish_frequency{0.f}
 {
     // TODO: use builtin forward prediction with the latency estimates plus a 
     // user-defined interval (on the order of 10ms)?
@@ -47,15 +47,16 @@ UnifiedMocapRouter::UnifiedMocapRouter(Mocap* mocap, Agent* agent) :
     this->agent = agent;
     this->mocap->enroll_agent(this->agent);
 
-    this->banner();
-    this->mocap->banner();
-    this->agent->banner();
 }
 
 void UnifiedMocapRouter::keystroke_loop()
 {
     // wait for keystrokes
-    std::cout << std::endl << "Listening to messages! Press q to quit, Press t to toggle message printing" << std::endl;
+    if (this->quiet) {
+        std::cout << std::endl << "Listening to messages! Press q to quit" << std::endl;
+    } else {
+        std::cout << std::endl << "Listening to messages! Press q to quit, Press t to toggle message printing" << std::endl;
+    }
 
 	while ( const int c = getch() )
     {
@@ -65,7 +66,9 @@ void UnifiedMocapRouter::keystroke_loop()
                 std::raise(SIGINT);
                 break;
             case 't':
-                this->agent->togglePrintMessages();
+                if (!this->quiet) {
+                    this->agent->togglePrintMessages();
+                }
                 break;
         }
     }
@@ -106,6 +109,7 @@ void UnifiedMocapRouter::add_base_po()
         ("streaming_ids,s", po::value<std::vector<unsigned int>>()->multitoken(), "streaming ids to track")
         ("streaming_names", po::value<std::vector<std::string>>()->multitoken(), "streaming names to track. Alternative to -s")
         ("craft_noses,n", po::value<std::vector<std::string>>()->multitoken(), "direction of aircraft noses when creating the rigid body in the mocap software. space-separated list of [right, far, left, near]")
+        ("quiet,q", "no message printing")
     ;
 }
 
@@ -117,6 +121,15 @@ void UnifiedMocapRouter::parse_base_po(int argc, char const *argv[])
     if (vm.count("help")) {
         std::cout << desc << std::endl;
         exit(0);
+    }
+
+    if (vm.count("quiet")) {
+        this->quiet = true;
+        std::cout << "### Unified Mocap Router: " << this->mocap->name << " -> " << this->agent->name << " ###" << std::endl << std::endl;
+    } else {
+        this->banner();
+        this->mocap->banner();
+        this->agent->banner();
     }
 
     CoordinateSystem co;

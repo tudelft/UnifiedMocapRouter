@@ -31,6 +31,7 @@ public:
                     _px4_topics{"/fmu/in/vehicle_visual_odometry"}
                   
     {
+        this->name = "ros2px4";
     }
 
     void banner() override

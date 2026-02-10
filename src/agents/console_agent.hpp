@@ -29,6 +29,7 @@ public:
     ConsoleAgent()
     {
         // do as little setup here as possible. Use pre_start instead
+        this->name = "console";
     }
 
     ~ConsoleAgent()

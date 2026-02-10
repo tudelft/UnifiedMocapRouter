@@ -115,6 +115,7 @@ public:
     QualisysMocap() : Mocap{}, base_port{22222}, stream_port{12345}, bigEndian{false}, shouldStop{false}
     {
         // setup work, but do as little as possible
+        this->name = "qualisys";
     }
 
     ~QualisysMocap()

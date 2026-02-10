@@ -203,13 +203,13 @@ int main(int argc, char const *argv[])
     boost::filesystem::path p(argv[0]);
     shutdown_handler = [p, argv](int signum)
     { 
-        std::cout << "Shutting down... Done. " << std::endl;
+        std::cout << "Shutting down..." << std::endl;
 #if defined(USE_AGENT_ROS2) || defined(USE_AGENT_ROS2PX4)  
         if (strcasecmp(argv[2], "ros2") == 0 || strcasecmp(argv[2], "ros2px4") == 0 ) {
             rclcpp::shutdown();
         }
 #endif
-         exit(0);
+        _exit(0); // very ugly
     };
 
 	signal(SIGINT, signal_handler);
