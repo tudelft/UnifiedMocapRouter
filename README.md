@@ -43,7 +43,7 @@ Prerequisites vary per agent. Currently, these are known:
 
 |   Agent   | Known Prerequisites                                                                      |
 |:---------:|------------------------------------------------------------------------------------------|
-| all     | `cmake build-essential libboost-all-dev`, all installed with `apt`         |
+| all     | `cmake build-essential libboost-all-dev`, (minimal install: `libboost-program-options-dev` and `libboost-filesystem-dev`) all installed with `apt`         |
 | `ivy`     | `ivy-c-dev` installed from `ppa:paparazzi-uav/ppa`                                       |
 | `ros2`    | `ros-$ROS_DISTRO-base`, needs to be sourced for compilation (execute `. scripts/source_ros_and_msgs.sh`)                                   |
 | `ros2px4` | As above + `px4_msgs` must be sourced to run (execute `. scripts/source_ros_and_msgs.sh`)|
