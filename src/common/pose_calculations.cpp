@@ -110,7 +110,7 @@ FilteredPoseDifferentiator::FilteredPoseDifferentiator(float fBreakVel,
     _fBreakVel = fBreakVel;
     _fBreakRate = fBreakRate;
     if (fBreakVel < 1e-3) {
-        _kVel = 0.;
+        _kRate = 0.;
         std::cout << "WARNING: Velocity lowpass filter cannot be realized and will be disabled. Check fBreakVel." << std::endl;
         return;
     }

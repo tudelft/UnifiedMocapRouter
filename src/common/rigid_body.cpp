@@ -32,12 +32,12 @@ RigidBody::RigidBody( unsigned int streaming_id,
         // pi rotation around Y
         case ArenaDirection::NEAR: { this->nose_rot_angle = M_PI; break; }
     }
-    this->poseDiff = PoseDifferentiator(); 
-    //this->poseDiff = FilteredPoseDifferentiator( 
-    //    this->velocity_filter_hz,
-    //    this->rates_filter_hz,
-    //    fSample,
-    //);
+    // this->poseDiff = PoseDifferentiator(); 
+    this->poseDiff = FilteredPoseDifferentiator( 
+        10,
+        10,
+        180
+    );
 }
 
 pose_t RigidBody::getPoseIn( CoordinateSystem co, float north_angle )
