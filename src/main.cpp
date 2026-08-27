@@ -32,6 +32,10 @@
     #include "qualisys_mocap.hpp"
 #endif
 
+#ifdef USE_MOCAP_VICON
+    #include "vicon_mocap.hpp"
+#endif
+
 
 
 #ifdef USE_AGENT_CONSOLE
@@ -85,6 +89,9 @@ static void print_usage(char const *prog_name) {
 #ifdef USE_MOCAP_QUALISYS
     printf("qualisys ");
 #endif
+#ifdef USE_MOCAP_VICON
+    printf("vicon ");
+#endif
     printf("\n");
 
     printf("Available AGENTs: ");
@@ -133,6 +140,11 @@ int main(int argc, char const *argv[])
 #ifdef USE_MOCAP_QUALISYS
     if (strcasecmp(argv[1], "qualisys") == 0) {
         mocap = new QualisysMocap();
+    } else
+#endif
+#ifdef USE_MOCAP_VICON
+    if (strcasecmp(argv[1], "vicon") == 0) {
+        mocap = new ViconMocap();
     } else
 #endif
     {

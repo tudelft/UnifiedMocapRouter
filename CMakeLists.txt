@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.14)
 #%% input arguments
 
 # ADD YOUR NEW AGENT TO THIS SEMICOLON-SEPARATED LIST!
-set(ALL_MOCAPS "optitrack;qualisys;test")
+set(ALL_MOCAPS "optitrack;qualisys;vicon;test")
 set(ALL_AGENTS "ivy;udp;mavlink;ros2;ros2px4;console;log")
 
 # process arguments: use all mocaps/agents if unset
@@ -138,6 +138,28 @@ if ("qualisys" IN_LIST MOCAPS)
     #find_package(qualisys_cpp_sdk REQUIRED)
     target_link_libraries(mocap-router ${CMAKE_BINARY_DIR}/qualisys_cpp_sdk-prefix/src/qualisys_cpp_sdk-build/install/lib/libqualisys_cpp_sdk.a)
 
+endif()
+
+if ("vicon" IN_LIST MOCAPS)
+    # Include ExternalProject module
+    include(ExternalProject)
+
+    # Vicon DataStream SDK, built from source. The SDK is MIT licensed since
+    # v1.8.0. We fetch a repo containing the v1.13 SDK source plus a thin
+    # CMake build (vendored standalone Asio, C++20). Pin to a commit SHA
+    # (not a moving branch) for supply-chain safety.
+    ExternalProject_Add(vicon_datastream_sdk
+        GIT_REPOSITORY https://github.com/mbrummelhuis/test-vicon-sdk-host
+        GIT_TAG 010fcebd0aec4fd156b8079f1fe568d7becf2861
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=install
+        INSTALL_COMMAND cmake --build . --target install
+    )
+
+    add_dependencies(mocap-router vicon_datastream_sdk)
+
+    target_include_directories(mocap-router PUBLIC ${CMAKE_BINARY_DIR}/vicon_datastream_sdk-prefix/src/vicon_datastream_sdk-build/install/include/vicon-datastream-sdk)
+
+    target_link_libraries(mocap-router ${CMAKE_BINARY_DIR}/vicon_datastream_sdk-prefix/src/vicon_datastream_sdk-build/install/lib/libViconDataStreamSDK_CPP.a)
 endif()
 
 # Agent-specific libraries
