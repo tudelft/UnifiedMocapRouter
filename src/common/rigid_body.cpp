@@ -33,11 +33,15 @@ RigidBody::RigidBody( unsigned int streaming_id,
         case ArenaDirection::NEAR: { this->nose_rot_angle = M_PI; break; }
     }
     this->poseDiff = PoseDifferentiator(); 
-    //this->poseDiff = FilteredPoseDifferentiator( 
-    //    this->velocity_filter_hz,
-    //    this->rates_filter_hz,
-    //    fSample,
-    //);
+}
+
+void RigidBody::enableDerivativeFiltering(float fBreakVel, float fBreakRate, float fSample)
+{
+    this->poseDiff = FilteredPoseDifferentiator( 
+        fBreakVel,
+        fBreakRate,
+        fSample
+    );
 }
 
 pose_t RigidBody::getPoseIn( CoordinateSystem co, float north_angle )

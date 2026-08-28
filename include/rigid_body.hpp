@@ -30,6 +30,7 @@ class RigidBody
                   std::string streaming_name,
                   ArenaDirection nose_direction);
 
+        void enableDerivativeFiltering(float fBreakVel, float fBreakRate, float fSample);
         pose_t getPoseIn( CoordinateSystem co, float north_angle );
         twist_t getTwistIn( CoordinateSystem co, float north_angle );
         void setNewPoseENU_NorthFarSide(pose_t& newPose);

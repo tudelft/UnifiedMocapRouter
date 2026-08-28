@@ -104,6 +104,8 @@ void UnifiedMocapRouter::add_base_po()
         ("help,h", "produce help message")
         ("publish_divisor,d", po::value<unsigned int>(), "Publish every <publish_divisor> sample of the incoming MoCap data")
         ("publish_frequency,f", po::value<float>(), "Publish at least at this frequency, if there are new samples.")
+        ("filter_twist", po::value<float>(), "Enable filtering of pose derivatives (velocity/body rates). Specify the break frequency in Hz")
+        ("mocap_update_rate", po::value<float>(), "ONLY REQUIRED WHEN USING FILTERING. Specify the update rate of the mocap system in Hz.")
         ("coordinate_system,c", po::value<std::string>(), "coordinate system convention to use [ned, enu]")
         ("coordinate_north,r", po::value<std::string>(), "where north should be relative to the observer. Either non-zero number describing right-hand rotation of north axis from the far side, or one of [right, far, left, near].")
         ("streaming_ids,s", po::value<std::vector<unsigned int>>()->multitoken(), "streaming ids to track")
@@ -289,6 +291,20 @@ void UnifiedMocapRouter::parse_base_po(int argc, char const *argv[])
             } else { // if(vm.count("streaming_names")) { // redundant
                 std::cout << "Creating rigid body with streaming name " << this->streaming_names[i] << " and nose direction " << dir << std::endl;
                 rb = new RigidBody( i, this->streaming_names[i], dir );
+            }
+
+            if (vm.count("filter_twist") > 0) {
+                if (vm.count("mocap_update_rate") == 0) {
+                    std::cout << "Must specify --mocap_update_rate when using --filter_twist. Exiting" << std::endl;
+                    std::raise(SIGINT);
+                } else if (vm["mocap_update_rate"].as<float>() <= 0.f) {
+                    std::cout << "mocap_update_rate must be greater than 0" << std::endl;
+                    std::raise(SIGINT);
+                }
+                float fBreak = vm["filter_twist"].as<float>();
+                float fSample = 1.f / vm["mocap_update_rate"].as<float>();
+                std::cout << "Enabling filtering of pose derivatives with break frequency " << fBreak << " Hz and mocap update rate " << 1.f/fSample << " Hz" << std::endl;
+                rb->enableDerivativeFiltering(fBreak, fBreak, fSample);
             }
 
             this->mocap->track_rigid_body(*rb);
