@@ -150,7 +150,7 @@ if ("vicon" IN_LIST MOCAPS)
     # (not a moving branch) for supply-chain safety.
     ExternalProject_Add(vicon_datastream_sdk
         GIT_REPOSITORY https://github.com/tudelft/vicon-sdk-host
-        GIT_TAG 010fcebd0aec4fd156b8079f1fe568d7becf2861
+        GIT_TAG c12d0ba6b61ea32aaf5d78b2634d47bf4da42e8f
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=install
         INSTALL_COMMAND cmake --build . --target install
     )
