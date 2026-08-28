@@ -149,7 +149,7 @@ if ("vicon" IN_LIST MOCAPS)
     # CMake build (vendored standalone Asio, C++20). Pin to a commit SHA
     # (not a moving branch) for supply-chain safety.
     ExternalProject_Add(vicon_datastream_sdk
-        GIT_REPOSITORY https://github.com/mbrummelhuis/test-vicon-sdk-host
+        GIT_REPOSITORY https://github.com/tudelft/vicon-sdk-host
         GIT_TAG 010fcebd0aec4fd156b8079f1fe568d7becf2861
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=install
         INSTALL_COMMAND cmake --build . --target install
