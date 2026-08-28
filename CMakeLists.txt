@@ -100,8 +100,14 @@ target_link_libraries(mocap-router Threads::Threads)
 # mocap vendor specific libraries
 if ("optitrack" IN_LIST MOCAPS)
     include(FetchContent)
+
+    set(NATNET_SDK_URL "https://s3.amazonaws.com/naturalpoint/software/NatNetSDKLinux/ubuntu/NatNet_SDK_4.1_ubuntu.tar")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm|armv[0-9]+|aarch64)")
+        set(NATNET_SDK_URL "https://s3.amazonaws.com/naturalpoint/software/NatNetSDKLinux/ubuntu_arm/NatNet_SDK_4.4_ubuntu_ARM.tar")
+    endif()
+
     fetchcontent_declare(natnet_sdk_content
-      URL https://s3.amazonaws.com/naturalpoint/software/NatNetSDKLinux/ubuntu/NatNet_SDK_4.1_ubuntu.tar
+      URL ${NATNET_SDK_URL}
       #DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     fetchcontent_makeavailable(natnet_sdk_content)
