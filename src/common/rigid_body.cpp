@@ -32,11 +32,15 @@ RigidBody::RigidBody( unsigned int streaming_id,
         // pi rotation around Y
         case ArenaDirection::NEAR: { this->nose_rot_angle = M_PI; break; }
     }
-    // this->poseDiff = PoseDifferentiator(); 
+    this->poseDiff = PoseDifferentiator(); 
+}
+
+void RigidBody::enableDerivativeFiltering(float fBreakVel, float fBreakRate, float fSample)
+{
     this->poseDiff = FilteredPoseDifferentiator( 
-        10,
-        10,
-        180
+        fBreakVel,
+        fBreakRate,
+        fSample
     );
 }
 
