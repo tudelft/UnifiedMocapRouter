@@ -253,6 +253,7 @@ public:
         std::cout << "1. Rigid body streaming id(s) are correct" << std::endl;
         std::cout << "2. Rigid body(s) are selected in Motive" << std::endl;
         std::cout << "3. 'Multicast' is selected in 'Data Streaming Pane' in Motive" << std::endl;
+        std::cout << "4. If you're running a VM, consider using 'bridge' network or pass through a USB-Ethernet adaptor." << std::endl;
 
         return ErrorCode_OK;
     }
