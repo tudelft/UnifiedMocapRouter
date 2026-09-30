@@ -106,8 +106,6 @@ void UnifiedMocapRouter::add_base_po()
         ("publish_frequency,f", po::value<float>(), "Publish at least at this frequency, if there are new samples.")
         ("coordinate_system,c", po::value<std::string>(), "coordinate system convention to use [ned, enu]")
         ("coordinate_north,r", po::value<std::string>(), "where north should be relative to the observer. Either non-zero number describing right-hand rotation of north axis from the far side, or one of [right, far, left, near].")
-        ("streaming_ids,s", po::value<std::vector<unsigned int>>()->multitoken(), "streaming ids to track")
-        ("streaming_names", po::value<std::vector<std::string>>()->multitoken(), "streaming names to track. Alternative to -s")
         ("craft_noses,n", po::value<std::vector<std::string>>()->multitoken(), "direction of aircraft noses when creating the rigid body in the mocap software. space-separated list of [right, far, left, near]")
         ("quiet,q", "no message printing")
     ;

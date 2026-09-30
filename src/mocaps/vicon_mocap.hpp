@@ -82,6 +82,7 @@ public:
     {
         desc.add_options()
             ("mocap_ip", boost::program_options::value<std::string>(), "Vicon DataStream server IP (Vicon Tracker host).")
+            ("streaming_names,s", po::value<std::vector<std::string>>()->multitoken(), "streaming names to track")
             ("long_edge,l", po::value<std::string>(), "direction of long edge during ground-plane calibration [right, far, left, near]")
             ;
     }

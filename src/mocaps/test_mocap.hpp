@@ -66,6 +66,8 @@ public:
         //;
         desc.add_options()
             ("test_freq", po::value<float>(), "Test Mocap new sample frequency")
+            ("streaming_ids,s", po::value<std::vector<unsigned int>>()->multitoken(), "streaming ids to track")
+            ("streaming_names", po::value<std::vector<std::string>>()->multitoken(), "streaming names to track")
             ;
     }
 

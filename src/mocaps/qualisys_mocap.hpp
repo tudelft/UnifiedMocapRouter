@@ -145,6 +145,8 @@ public:
             ("mocap_ip", boost::program_options::value<std::string>(), "QTM IP.")
             ("mocap_base_port", boost::program_options::value<unsigned short int>(), "QTM TCP base port.")
             ("mocap_stream_port", boost::program_options::value<unsigned short int>(), "Arbitrary UDP port 1024-65535 for streaming.")
+            ("streaming_ids,s", po::value<std::vector<unsigned int>>()->multitoken(), "streaming ids to track")
+            ("streaming_names", po::value<std::vector<std::string>>()->multitoken(), "streaming names to track. Alternative to -s")
             ("long_edge,l", po::value<std::string>(), "direction of long edge during Motive ground-plane calibration [right, far, left, near]")
             ;
     }
