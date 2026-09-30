@@ -198,6 +198,22 @@ public:
             bool anyTracked = false;
             const unsigned int subjectCount = this->client.GetSubjectCount().SubjectCount;
 
+            // On the first received frame, list the subject names the
+            // server is streaming so the correct --streaming_names value is
+            // discoverable without the Vicon Tracker UI. A function-local
+            // static suffices: data_handler runs in a single thread.
+            static bool subjectsLogged = false;
+            if (!subjectsLogged) {
+                subjectsLogged = true;
+                std::cout << "[vicon] first frame received, " << subjectCount
+                          << " subject(s) streaming:" << std::endl;
+                for (unsigned int j = 0; j < subjectCount; j++) {
+                    std::cout << "  [" << j << "] \""
+                              << this->client.GetSubjectName(j).SubjectName
+                              << "\"" << std::endl;
+                }
+            }
+
             for (unsigned int i = 0; i < subjectCount; i++)
             {
                 std::string subjectName = this->client.GetSubjectName(i).SubjectName;
