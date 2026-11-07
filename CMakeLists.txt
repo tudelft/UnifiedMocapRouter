@@ -68,6 +68,11 @@ message(STATUS "Building AGENTS: ${AGENTS}")
 
 project(mocap-router LANGUAGES CXX)
 
+# extracted files get the time of extraction (CMake 3.24+); quiets the warning of newer CMake
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 # sources and executable
 file(GLOB SOURCES "src/*.cpp" "src/agents/*.cpp" "src/common/*.cpp" "src/mocaps/*.cpp")
 add_executable(mocap-router ${SOURCES})
@@ -90,9 +95,8 @@ endif()
 #%% find external libraries and include for all agents
 
 # common libraries (boost and pthread)
-find_package(Boost REQUIRED COMPONENTS program_options filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(mocap-router ${Boost_LIBRARIES})
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options filesystem)
+target_link_libraries(mocap-router Boost::program_options Boost::filesystem)
 
 find_package(Threads REQUIRED)
 target_link_libraries(mocap-router Threads::Threads)
@@ -108,7 +112,6 @@ if ("optitrack" IN_LIST MOCAPS)
 
     fetchcontent_declare(natnet_sdk_content
       URL ${NATNET_SDK_URL}
-      #DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     fetchcontent_makeavailable(natnet_sdk_content)
 
@@ -153,10 +156,6 @@ if ("ivy" IN_LIST AGENTS)
 
     add_definitions(${GLIB_CFLAGS_OTHER})
     target_link_libraries(mocap-router ${GLIB_LIBRARIES})
-endif()
-
-if ("udp" IN_LIST AGENTS)
-    find_package(Boost REQUIRED COMPONENTS system)
 endif()
 
 if ("mavlink" IN_LIST AGENTS)
