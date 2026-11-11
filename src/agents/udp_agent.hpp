@@ -27,7 +27,7 @@ using namespace boost::asio;
 class UdpAgent : public Agent
 {
 public:
-    UdpAgent() : _socket{_io_service}
+    UdpAgent() : _socket{_io_context}
     {
         // do as little setup here as possible. Use pre_start instead
         this->name = "udp";
@@ -101,7 +101,7 @@ public:
 
     void pre_start() override
     {
-        this->_remote_endpoint = ip::udp::endpoint(ip::address::from_string(this->_client_ip), this->_port);
+        this->_remote_endpoint = ip::udp::endpoint(ip::make_address(this->_client_ip), this->_port);
         this->_socket.open(ip::udp::v4());
         this->initialized = true;
     }
@@ -130,7 +130,7 @@ private:
     std::vector<unsigned int> _ac_id;
     unsigned short int _port;
     std::string _client_ip;
-    io_service _io_service;
+    io_context _io_context;
     ip::udp::socket _socket;
     ip::udp::endpoint _remote_endpoint;
 };
