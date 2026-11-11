@@ -66,7 +66,7 @@ message(STATUS "Building AGENTS: ${AGENTS}")
 
 #%% top level project setup
 
-project(mocap-router LANGUAGES CXX)
+project(mocap-router LANGUAGES C CXX)
 
 # extracted files get the time of extraction (CMake 3.24+); quiets the warning of newer CMake
 if(POLICY CMP0135)
@@ -129,7 +129,6 @@ if ("qualisys" IN_LIST MOCAPS)
     ExternalProject_Add(qualisys_cpp_sdk
         GIT_REPOSITORY https://github.com/qualisys/qualisys_cpp_sdk/
         GIT_TAG rt_protocol_1.25
-        GIT_SUBMODULES_RECURSE TRUE
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=install
         INSTALL_COMMAND cmake --build . --target install
     )
@@ -163,7 +162,6 @@ if ("mavlink" IN_LIST AGENTS)
     ExternalProject_Add(mavlink
         GIT_REPOSITORY https://github.com/mavlink/mavlink
         GIT_TAG 23eb98ca00032a7edc8b6ff1eb8914ec27c7b268
-        GIT_SUBMODULES_RECURSE TRUE
         CMAKE_ARGS -H. -DCMAKE_INSTALL_PREFIX=install -DMAVLINK_DIALECT=common -DMAVLINK_VERSION=2.0
         INSTALL_COMMAND cmake --build . --target install
     )
@@ -179,7 +177,7 @@ if ("ros2" IN_LIST AGENTS)
     find_package(rclcpp REQUIRED)
     find_package(geometry_msgs REQUIRED)
 
-    ament_target_dependencies(mocap-router rclcpp geometry_msgs)
+    target_link_libraries(mocap-router rclcpp::rclcpp ${geometry_msgs_TARGETS})
 endif()
 
 if ("ros2px4" IN_LIST AGENTS)
@@ -187,7 +185,7 @@ if ("ros2px4" IN_LIST AGENTS)
     # General ROS 2 dependencies
     find_package(ament_cmake REQUIRED)
     find_package(rclcpp REQUIRED)
-    ament_target_dependencies(mocap-router rclcpp)
+    target_link_libraries(mocap-router rclcpp::rclcpp)
 
     # Specific PX4 msgs dependencies
     include(FetchContent)

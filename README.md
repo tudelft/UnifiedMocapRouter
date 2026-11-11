@@ -22,7 +22,7 @@ different robotics systems.
 |        Agent              | Means of Publishing                                                                   | Launch Command (Example)                                                             |
 |:-------------------------:|---------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | `ROS2`                    | On two ros2 topics `/mocap/pose` and `/mocap/twist`                                   | `./mocap-router optitrack ros2 -f 100 -c enu -r far -s 1 -n far`                           |
-| `ROS2PX4`                 | As above + the published on the required PX4 topic `/fmu/in/vehicle_visual_odometry`  | `./mocap-router optitrack ros2px4 -f 100 -c enu -r far -s 1 -n far`                        |
+| `ROS2PX4`                 | On the PX4 topic `/fmu/in/vehicle_visual_odometry` (not on the `ROS2` topics)        | `./mocap-router optitrack ros2px4 -f 100 -c enu -r far -s 1 -n far`                        |
 | `udp`                     | Data as a UDP stream (see `agents/udp_agent.hpp` for the structs)                     | `./mocap-router optitrack udp -f 100 -c enu -r far -s 1 -n far -i 192.168.209.100 -p 1234` |
 | `ivy`                     | Publish to an IVY bus                                                                 | `./mocap-router optitrack ivy -f 100 -c enu -r far -s 1 -n far`                            |
 | `mavlink` (experimental)  | Publish mavlink messages to a UDP endpoint (use mavlink-router to uplink to vehicle!) | `./mocap-router optitrack mavlink -f 100 -c enu -r far -s 1 -n far --autopilot px4`        |
@@ -33,7 +33,7 @@ Explanation of arguments: Run `./mocap-router <your_mocap> <your_client> --help`
 
 ### Currently supported platforms:
 
-Ubuntu >= 20.04 on x86
+Ubuntu >= 20.04 on x86. The `ros2` and `ros2px4` agents need ROS 2 Humble or newer (tested: Humble, Jazzy, Lyrical).
 
 ## Building and Running
 
@@ -43,9 +43,10 @@ Prerequisites vary per agent. Currently, these are known:
 
 |   Agent   | Known Prerequisites                                                                      |
 |:---------:|------------------------------------------------------------------------------------------|
-| all     | `cmake build-essential libboost-all-dev`, (minimal install: `libboost-program-options-dev` and `libboost-filesystem-dev`) all installed with `apt`         |
+| all     | `cmake build-essential git libboost-all-dev`, (minimal install: `libboost-program-options-dev` and `libboost-filesystem-dev`) all installed with `apt`         |
 | `ivy`     | `ivy-c-dev` installed from `ppa:paparazzi-uav/ppa`                                       |
-| `ros2`    | `ros-$ROS_DISTRO-base`, needs to be sourced for compilation (execute `. scripts/source_ros_and_msgs.sh`)                                   |
+| `mavlink` | `python3-pip` (the MAVLink headers are generated with pymavlink at build time)           |
+| `ros2`    | `ros-$ROS_DISTRO-ros-base` (Humble or newer), needs to be sourced for compilation (execute `. scripts/source_ros_and_msgs.sh`)                                   |
 | `ros2px4` | As above + `px4_msgs` must be sourced to run (execute `. scripts/source_ros_and_msgs.sh`)|
 
 Build for all agents with:

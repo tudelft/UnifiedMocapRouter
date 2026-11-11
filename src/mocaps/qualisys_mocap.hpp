@@ -314,7 +314,7 @@ public:
                             quaternion_of_rotationMatrix(&quat, &rotM);
 
                             pose_t newPoseENU_longEdgeEast = {
-                                markerTimeUs,
+                                .timeUs = markerTimeUs,
                                 .x = 1e-3f * fX, .y = 1e-3f * fY, .z = 1e-3f * fZ,
                                 .qx = quat.x, .qy = quat.y, .qz = quat.z, .qw = quat.w
                             };
